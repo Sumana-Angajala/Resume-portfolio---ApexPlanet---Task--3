@@ -1,9 +1,4 @@
 # Resume-portfolio---ApexPlanet---Task--3
-Here's a complete and well-formatted `README.md` file for your **Resume + Portfolio Builder** project:
-
----
-
-````markdown
 # 🎓 Resume + Portfolio Builder Web App
 
 A fully responsive **Resume + Portfolio Builder** created as **Task 3** for the **Apex Planet Internship**, developed by **Angajala Sumana**.
@@ -43,7 +38,7 @@ A fully responsive **Resume + Portfolio Builder** created as **Task 3** for the 
    ```bash
    git clone https://github.com/yourusername/resume-builder.git
    cd resume-builder
-````
+
 
 2. **Open in Browser**
 
