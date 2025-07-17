@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --text: #333;
+      --card: #fff;
+      --accent: #1e3a8a;
+    }
+    body.dark {
+      --bg: #111827;
+      --text: #f3f4f6;
+      --card: #1f2937;
+      --accent: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    header h1 { font-size: 1.8rem; }
+    .toggle-btn, .download-btn, .save-btn {
+      background: white;
+      color: var(--accent);
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 0.2rem;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+      gap: 2rem;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .form-section, .preview-section {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    h2 { margin-top: 0; font-size: 1.4rem; color: var(--accent); }
+    label { font-weight: 600; }
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0 1.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .multi-input {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .multi-input button {
+      padding: 0.5rem;
+      border: none;
+      background: var(--accent);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .preview-card {
+      background: var(--card);
+      padding: 2rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+    .preview-card h1 { font-size: 2rem; margin-bottom: 0.3rem; color: var(--accent); }
+    .preview-card p { margin: 0.5rem 0; }
+    .section-title {
+      margin-top: 1.5rem;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    .timeline {
+      border-left: 3px solid var(--accent);
+      margin-left: 1rem;
+      padding-left: 1rem;
+    }
+    .timeline-item {
+      margin-bottom: 1rem;
+    }
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+    footer {
+      background: var(--accent);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      font-size: 0.95rem;
+    }
+    @media (min-width: 768px) {
+      .container { flex-direction: row; }
+      .form-section, .preview-section { flex: 1; }
+      .form-section { margin-right: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Resume Builder</h1>
+  <div>
+    <button class="toggle-btn" onclick="toggleTheme()">Toggle Theme</button>
+    <button class="save-btn" onclick="saveResume()">Save</button>
+    <button class="save-btn" onclick="loadResume()">Load</button>
+    <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <!-- Form Section -->
+    <div class="form-section">
+      <h2>Your Information</h2>
+
+      <label>Profile Photo</label>
+      <input type="file" id="photo" accept="image/*"/>
+
+      <label>Name</label>
+      <input type="text" id="name" placeholder="Your full name"/>
+
+      <label>Bio</label>
+      <textarea id="bio" rows="2" placeholder="Short bio"></textarea>
+
+      <label>Links (LinkedIn, GitHub, Portfolio)</label>
+      <textarea id="links" rows="2" placeholder="Comma separated URLs"></textarea>
+
+      <label>Skills</label>
+      <div id="skills-container">
+        <div class="multi-input">
+          <input type="text" placeholder="Skill"/>
+          <button onclick="addInput(this, 'skills-container')">+</button>
+        </div>
+      </div>
+
+      <label>Projects</label>
+      <div id="projects-container">
+        <div class="multi-input">
+          <input type="text" placeholder="Project description"/>
+          <button onclick="addInput(this, 'projects-container')">+</button>
+        </div>
+      </div>
+
+      <label>Education Timeline</label>
+      <div id="education-container">
+        <div class="multi-input">
+          <input type="text" placeholder="e.g., 2021 - BSc in CS at XYZ College"/>
+          <button onclick="addInput(this, 'education-container')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section">
+      <h2>Live Preview</h2>
+      <div class="preview-card" id="preview">
+        <img src="" alt="Profile" class="profile-pic" id="preview-photo" style="display:none;"/>
+        <h1 id="preview-name">Your Name</h1>
+        <p id="preview-bio">Short bio will appear here.</p>
+
+        <div class="section-title">Links</div>
+        <ul id="preview-links"></ul>
+
+        <div class="section-title">Skills</div>
+        <ul id="preview-skills"></ul>
+
+        <div class="section-title">Projects</div>
+        <ul id="preview-projects"></ul>
+
+        <div class="section-title">Education</div>
+        <div class="timeline" id="preview-education"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 | Developed by Angajala Sumana – ApexPlanet Internship Task 3
+</footer>
+
+<script>
+  function updatePreview() {
+    document.getElementById('preview-name').textContent = document.getElementById('name').value || 'Your Name';
+    document.getElementById('preview-bio').textContent = document.getElementById('bio').value || 'Short bio will appear here.';
+
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('preview-photo');
+    if (photoInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        photoPreview.src = reader.result;
+        photoPreview.style.display = "block";
+      };
+      reader.readAsDataURL(photoInput.files[0]);
+    }
+
+    const links = document.getElementById('links').value.split(',');
+    const linksList = document.getElementById('preview-links');
+    linksList.innerHTML = '';
+    links.forEach(link => {
+      if (link.trim()) {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${link.trim()}" target="_blank">${link.trim()}</a>`;
+        linksList.appendChild(li);
+      }
+    });
+
+    const skills = document.querySelectorAll('#skills-container input');
+    const skillsList = document.getElementById('preview-skills');
+    skillsList.innerHTML = '';
+    skills.forEach(input => {
+      if (input.value.trim()) {
+        const li = document.createElement('li');
+        li.textContent = input.value.trim();
+        skillsList.appendChild(li);
+      }
+    });
+
+    const projects = document.querySelectorAll('#projects-container input');
+    const projectsList = document.getElementById('preview-projects');
+    projectsList.innerHTML = '';
+    projects.forEach(input => {
+      if (input.value.trim()) {
+        const li = document.createElement('li');
+        li.textContent = input.value.trim();
+        projectsList.appendChild(li);
+      }
+    });
+
+    const education = document.querySelectorAll('#education-container input');
+    const eduList = document.getElementById('preview-education');
+    eduList.innerHTML = '';
+    education.forEach(input => {
+      if (input.value.trim()) {
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.textContent = input.value.trim();
+        eduList.appendChild(div);
+      }
+    });
+  }
+
+  function addInput(btn, containerId) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'multi-input';
+    div.innerHTML = `<input type="text" placeholder="Add more"/> <button onclick="addInput(this, '${containerId}')">+</button>`;
+    container.appendChild(div);
+    div.querySelector('input').addEventListener('input', updatePreview);
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark');
+  }
+
+  function downloadPDF() {
+    const element = document.getElementById('preview');
+    html2pdf().from(element).save('resume.pdf');
+  }
+
+  function saveResume() {
+    const data = {
+      name: document.getElementById('name').value,
+      bio: document.getElementById('bio').value,
+      links: document.getElementById('links').value,
+      skills: Array.from(document.querySelectorAll('#skills-container input')).map(i => i.value),
+      projects: Array.from(document.querySelectorAll('#projects-container input')).map(i => i.value),
+      education: Array.from(document.querySelectorAll('#education-container input')).map(i => i.value)
+    };
+    localStorage.setItem('resumeData', JSON.stringify(data));
+    alert("Resume saved!");
+  }
+
+  function loadResume() {
+    const data = JSON.parse(localStorage.getItem('resumeData'));
+    if (!data) return alert("No saved resume found!");
+    document.getElementById('name').value = data.name;
+    document.getElementById('bio').value = data.bio;
+    document.getElementById('links').value = data.links;
+
+    function restoreInputs(containerId, values) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      values.forEach(value => {
+        const div = document.createElement('div');
+        div.className = 'multi-input';
+        div.innerHTML = `<input type="text" value="${value}" placeholder="Add more"/> <button onclick="addInput(this, '${containerId}')">+</button>`;
+        container.appendChild(div);
+        div.querySelector('input').addEventListener('input', updatePreview);
+      });
+    }
+
+    restoreInputs('skills-container', data.skills);
+    restoreInputs('projects-container', data.projects);
+    restoreInputs('education-container', data.education);
+    updatePreview();
+  }
+
+  document.querySelectorAll('input, textarea').forEach(input => {
+    input.addEventListener('input', updatePreview);
+  });
+  updatePreview(); // Init
+</script>
+
+</body>
+</html>
